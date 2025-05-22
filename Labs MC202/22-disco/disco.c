@@ -1,122 +1,197 @@
-#include<stdio.h>
-#include<stdlib.h>
-#include <errno.h>
-#include<string.h>
-#define MAX_NOMES 10
-
-typedef struct {
-    int valor;
-    char prefixo;
-} tamanho;
-
-typedef struct {
-    char nome[MAX_NOMES];
-    tamanho size;
-} arquivo;
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 
 typedef struct bloco {
-    arquivo arq;
-    int capacidade; // em bytes
-    int p; // porcentagem ocupada
+    int livre;   // 1 se livre, 0 se ocupado
+    int tamanho; // tamanho em Kb
+    char nome[11]; // nome do arquivo (se ocupado)
     struct bloco* prox;
-} bloco;
+} Bloco;
+
+/*a ideia aqui é converter todos os tamanhos dos arquivos e do disco para a menor unidade usada
+(nesse caso, o Kb) antes de efetuar as operações, já que um disco por exemplo com tamanho 5gb pode receber
+um arquivo em Mb ou Kb*/
 
 
-/* A função a seguir calcula quanto cada bloco do nosso disco tem de memória
-Ela converte o tamanho lido do disco para Kb (que é a menor divisão de memória 
-utilizada no lab.)*/
+int converter_para_kb(char* str) {
+    int valor;
+    char unidade[3];
+    sscanf(str, "%d%2s", &valor, unidade);
 
-long calcula_cap_bloco(tamanho *disco) {
-    long cap_bloco = 0;
-
-    if (disco->prefixo == 'M') {
-        cap_bloco = (disco->valor * 1024L) / 8;
-    } else if (disco->prefixo == 'G') {
-        cap_bloco = (disco->valor * 1024L * 1024L) / 8;
-    } else if (disco->prefixo == 'K') {
-        cap_bloco = disco->valor / 8;
-    }
-
-    return cap_bloco;
+    if (strcmp(unidade, "Kb") == 0) return valor;
+    if (strcmp(unidade, "Mb") == 0) return valor * 1024;
+    if (strcmp(unidade, "Gb") == 0) return valor * 1024 * 1024;
+    return 0;
 }
 
-/*Nosso disco é uma lista ligada em que cada nó é um bloco com a capacidade (em Kb) 
-igual ao tamanho do disco dividido por 8 (são 8 blocos totais)*/
 
-bloco* inicializa_disco(int capacidade_bloco) {
-    bloco* inicio = NULL;
-    bloco* atual = NULL;
 
-    for (int i = 0; i < 8; i++) {
-        bloco* novo = malloc(sizeof(bloco));
-        if (!novo) {
-            perror("Erro ao alocar bloco");
-            exit(1);
+int inserir(Bloco** disco, char* nome, int tamanho) {
+    Bloco* atual = *disco;
+    Bloco* melhor = NULL;
+
+    while (atual) {
+        if (atual->livre && atual->tamanho >= tamanho) {
+            if (!melhor || atual->tamanho < melhor->tamanho)
+                melhor = atual;
         }
+        atual = atual->prox;
+    }
 
-        // Inicializa os campos do bloco
-        novo->capacidade = capacidade_bloco;
-        novo->p = 0;
-        novo->prox = NULL;
-        novo->arq.nome[0] = '\0'; // vazio
-        novo->arq.size.valor = 0;
-        novo->arq.size.prefixo = 'K'; // padrão
+    if (!melhor) return 0; // precisa otimizar
 
-        if (inicio == NULL) {
-            inicio = novo;
+    if (melhor->tamanho == tamanho) {
+        melhor->livre = 0;
+        strcpy(melhor->nome, nome);
+    } else {
+        Bloco* novo = malloc(sizeof(Bloco));
+        novo->livre = 1;
+        novo->tamanho = melhor->tamanho - tamanho;
+        novo->prox = melhor->prox;
+
+        melhor->livre = 0;
+        melhor->tamanho = tamanho;
+        strcpy(melhor->nome, nome);
+        melhor->prox = novo;
+    }
+
+    return 1;
+}
+
+void remover(Bloco* disco, char* nome) {
+    Bloco* atual = disco;
+    while (atual) {
+        if (!atual->livre && strcmp(atual->nome, nome) == 0) {
+            atual->livre = 1;
+            atual->nome[0] = '\0';
+            break;
+        }
+        atual = atual->prox;
+    }
+}
+
+void otimizar(Bloco** disco) {
+    Bloco* novo = NULL;
+    Bloco** ult = &novo;
+    Bloco* atual = *disco;
+    int total_livre = 0;
+
+    while (atual) {
+        if (!atual->livre) {
+            Bloco* ocupado = malloc(sizeof(Bloco));
+            *ocupado = *atual;
+            ocupado->prox = NULL;
+            *ult = ocupado;
+            ult = &ocupado->prox;
         } else {
-            atual->prox = novo;
+            total_livre += atual->tamanho;
         }
-        atual = novo;
+        atual = atual->prox;
     }
 
-    return inicio;
+    if (total_livre > 0) {
+        Bloco* livre = malloc(sizeof(Bloco));
+        livre->livre = 1;
+        livre->tamanho = total_livre;
+        livre->nome[0] = '\0';
+        livre->prox = NULL;
+        *ult = livre;
+    }
+
+    atual = *disco;
+    while (atual) {
+        Bloco* temp = atual;
+        atual = atual->prox;
+        free(temp);
+    }
+
+    *disco = novo;
 }
 
+void imprimir(Bloco* disco, int capacidade) {
+    int parte = capacidade / 8;
+    int ocupados[8] = {0};
 
-int main(){
-    int N,D; //N é o número de comandos e D o tamanho do disco
-    
-    // o tamanho do disco será da forma (VALOR) (PREFIXO)b
-    int valor; 
-    char prefixo; //K,M,G
-    tamanho * disco = malloc(sizeof(tamanho));
-
-    while(1){
-        scanf("%d", &N);
-        if (N == 0){
-            return 0;
-        }
-        scanf("%d%cb", &disco->valor, &disco->prefixo);
-
-        long capacidade_bloco = calcula_cap_bloco(disco);
-        printf("Capacidade do bloco: %ld Kb\n", capacidade_bloco);
-
-        bloco* lista_blocos = inicializa_disco(capacidade_bloco);
-        
-
-        int i;
-        for(int i = 0; i < N; i++){
-            char comando[10];
-            scanf("%s", comando);
-
-            if (strcmp(comando, "inserir") == 0){
-                arquivo file;
-                scanf("%s %d%cb", &file.nome, &file.size.valor, &file.size.prefixo);
-                // chamar função inserir (arquivo)
-            
-            } else if (strcmp(comando, "remover") == 0){
-                char nome[MAX_NOMES];
-                scanf("%s", nome);
-            
-            } else if (strcmp(comando, "otimizar") == 0){
-                printf("teste");
-
-            } else {
-                return 0;
+    int pos = 0;
+    while (disco) {
+        if (!disco->livre) {
+            int inicio = pos / parte;
+            int fim = (pos + disco->tamanho - 1) / parte;
+            for (int i = inicio; i <= fim && i < 8; i++) {
+                int parte_ini = i * parte;
+                int parte_fim = parte_ini + parte;
+                int inter_ini = pos > parte_ini ? pos : parte_ini;
+                int inter_fim = (pos + disco->tamanho) < parte_fim ? (pos + disco->tamanho) : parte_fim;
+                ocupados[i] += inter_fim - inter_ini;
             }
         }
+        pos += disco->tamanho;
+        disco = disco->prox;
     }
-}
-    
 
+    for (int i = 0; i < 8; i++) {
+        float perc = (100.0 * ocupados[i]) / parte;
+        if (perc <= 25) printf("[ ]");
+        else if (perc <= 75) printf("[-]");
+        else printf("[#]");
+    }
+    printf("\n");
+}
+
+
+int main() {
+    int N;
+    while (scanf("%d", &N) && N != 0) {
+        char str_tam[10];
+        scanf("%s", str_tam);
+        int capacidade = converter_para_kb(str_tam);
+
+        Bloco* disco = malloc(sizeof(Bloco));
+        disco->livre = 1;
+        disco->tamanho = capacidade;
+        disco->prox = NULL;
+
+        int erro = 0;
+
+        for (int i = 0; i < N; i++) {
+            char op[10], nome[11], tam_str[10];
+            scanf("%s", op);
+            if (strcmp(op, "inserir") == 0) {
+                scanf("%s %s", nome, tam_str);
+                int tam = converter_para_kb(tam_str);
+                if (!inserir(&disco, nome, tam)) {
+                    otimizar(&disco);
+                    if (!inserir(&disco, nome, tam)) {
+                        printf("ERRO: disco cheio\n");
+                        erro = 1;
+                        char linha[100];
+                        fgets(linha, 100, stdin);
+                        for (int j = i + 1; j < N; j++) fgets(linha, 100, stdin);
+                        break;
+                    }
+                }
+            } else if (strcmp(op, "remover") == 0) {
+                scanf("%s", nome);
+                remover(disco, nome);
+            } else if (strcmp(op, "otimizar") == 0) {
+                otimizar(&disco);
+            }
+        }
+
+        if (!erro) {
+            imprimir(disco, capacidade);
+        }
+
+        Bloco* atual = disco;
+        while (atual) {
+            Bloco* temp = atual;
+            atual = atual->prox;
+            free(temp);
+        }
+    }
+
+    return 0;
+}
+
+    
