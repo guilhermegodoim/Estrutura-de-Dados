@@ -46,6 +46,16 @@ int inserir_final(vetor *vetor, int x) {
     return 1; // sucesso
 }
 
+int remover(vetor * vetor,int x){
+    vetor->size--;
+    if ((vetor->size) > (vetor->cap)/4) {
+        int nova_cap = (vetor->cap)/2;
+        int * novos_dados = realloc(vetor->dados, nova_cap * sizeof(int));
+    }
+
+
+
+}
 
 
 
