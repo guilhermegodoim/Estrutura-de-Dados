@@ -1,169 +1,247 @@
-#include<stdio.h>
-#include<stdlib.h>
+#include <stdio.h>
+#include <stdlib.h>
 
-typedef struct no{
+typedef struct no {
     int num;
-    struct no * prox;
-}no;
+    int contador;  
+    struct no *prox;
+} no;
 
-/*Insere o elemento no final da lista. retorna 1 se bem sucedido
-e 0 se não houver memória*/
+no* criar_no(int valor) {
+    no *novo = malloc(sizeof(no));
+    if (novo == NULL) return NULL;
+    novo->num = valor;
+    novo->contador = 0;
+    novo->prox = NULL;
+    return novo;
+}
 
-int inserir(no ** lista, int x){
-    no* novo = malloc(sizeof(no));
-
-    if (novo == NULL){
+int inserir_fim(no **lista, int x) {
+    no *novo = criar_no(x);
+    if (novo == NULL) {
         return 0;
     }
-
-    novo->num = x;
-    novo->prox = NULL;
-
-    if (*lista == NULL){
+    
+    if (*lista == NULL) {
         *lista = novo;
-    }
-
-    else{
-        no * p = *lista;
-        while (p->prox != NULL){
+    } else {
+        no *p = *lista;
+        while (p->prox != NULL) {
             p = p->prox;
         }
-
-    p->prox = novo;
+        p->prox = novo;
     }
-
     return 1;
 }
 
-/* Insere o elemento no começo da lista. retorna 1 se bem sucedido
-e 0 se não houver memória */
-int inserir_começo(no ** lista, int x){
-    no * novo = malloc(sizeof(no));
-    if (novo = NULL){
+int inserir_inicio(no **lista, int x) {
+    no *novo = criar_no(x);
+    if (novo == NULL) {
         return 0;
     }
-
-    novo->num = x;
+    
     novo->prox = *lista;
     *lista = novo;
-
     return 1;
-
 }
-/* recebe o ponteiro para a lista ligada e um inteiro n.
-monta a lista na forma (1,2,...,n) */
 
+// monta lista no formato (1, 2, ..., n)
 void montar_lista(no **lista, int n) {
+    // limpa a lista para evitar que, caso haja alteração nela ao usar uma função de busca, a próxima não itere sobre a lista alterada
+    while (*lista != NULL) {
+        no *temp = *lista;
+        *lista = (*lista)->prox;
+        free(temp);
+    }
+    
     for (int i = 1; i <= n; i++) {
-        inserir(lista, i);
+        inserir_fim(lista, i);
     }
 }
 
-void imprimir(no *lista) {
-    while (lista != NULL) {
-        printf("%d ", lista->num);
-        lista = lista->prox;
+int busca_sequencial(no **lista, int chave) {
+    int comparacoes = 0;
+    no *atual = *lista;
+    
+    while (atual != NULL) {
+        comparacoes++;
+        if (atual->num == chave) {
+            return comparacoes;
+        }
+        atual = atual->prox;
     }
-    printf("\n");
+    
+    inserir_fim(lista, chave);
+    return comparacoes;
 }
 
-// corrigir!!!!
-void busca_mtf(no **lista, int chave, int *achou, int *n_comp_total) {
-    int n_comp = 0;
+// quando o elemento é encontrado ele é movido para o início da lista
+int busca_mtf(no **lista, int chave) {
+    int comparacoes = 0;
     no *anterior = NULL;
     no *atual = *lista;
-
+    
     while (atual != NULL) {
-        n_comp++;
+        comparacoes++;
         if (atual->num == chave) {
-            *achou = 1;
-            *n_comp_total += n_comp;
-
-            // Se já está no início, nada a fazer
             if (anterior != NULL) {
-                // Remove da posição atual
                 anterior->prox = atual->prox;
-
-                // Move pro início
                 atual->prox = *lista;
                 *lista = atual;
             }
-
-            return;
+            return comparacoes;
         }
         anterior = atual;
         atual = atual->prox;
     }
-
-    // Não encontrou
-    *achou = 0;
-    *n_comp_total += n_comp;
-
-    // Insere no começo
-    inserir_começo(lista, chave);
+    
+    inserir_inicio(lista, chave);
+    return comparacoes;
 }
 
-void busca_sequencial(no *lista, int chave, int *achou, int *n_comp_total) {
-    int n_comp = 0;
-    no *atual = lista;
-
+// quando o elementp é encontrado, ele troca de lugar com o seu antecessor
+int busca_transpose(no **lista, int chave) {
+    int comparacoes = 0;
+    no *anterior_anterior = NULL;
+    no *anterior = NULL;
+    no *atual = *lista;
+    
     while (atual != NULL) {
-        n_comp++;
+        comparacoes++;
         if (atual->num == chave) {
-            *achou = 1;
-            *n_comp_total += n_comp;
-            return;
+            if (anterior != NULL) {
+                if (anterior_anterior != NULL) {
+                    anterior_anterior->prox = atual;
+                } else {
+                    *lista = atual;
+                }
+                anterior->prox = atual->prox;
+                atual->prox = anterior;
+            }
+            return comparacoes;
         }
+        anterior_anterior = anterior;
+        anterior = atual;
         atual = atual->prox;
     }
-
-    // não encontrou
-    *achou = 0;
-    *n_comp_total += n_comp;
+    
+    inserir_inicio(lista, chave);
+    return comparacoes;
 }
 
-
-
-
-
+// mantém um contador de acesso para cada elemento
+int busca_count(no **lista, int chave) {
+    int comparacoes = 0;
+    no *anterior = NULL;
+    no *atual = *lista;
+    
+    while (atual != NULL) {
+        comparacoes++;
+        if (atual->num == chave) {
+            atual->contador++;
+            
+            if (anterior != NULL) {
+                anterior->prox = atual->prox;
+            } else {
+                *lista = atual->prox;
+            }
+            
+            no *pos_anterior = NULL;
+            no *pos_atual = *lista;
+            
+            while (pos_atual != NULL && pos_atual->contador > atual->contador) {
+                pos_anterior = pos_atual;
+                pos_atual = pos_atual->prox;
+            }
+            
+            if (pos_anterior == NULL) {
+                atual->prox = *lista;
+                *lista = atual;
+            } else {
+                atual->prox = pos_anterior->prox;
+                pos_anterior->prox = atual;
+            }
+            
+            return comparacoes;
+        }
+        anterior = atual;
+        atual = atual->prox;
+    }
+    
+    no *novo = criar_no(chave);
+    if (novo == NULL) return comparacoes;
+    
+    novo->contador = 1;
+    
+    no *pos_anterior = NULL;
+    no *pos_atual = *lista;
+    
+    while (pos_atual != NULL && pos_atual->contador >= 1) {
+        pos_anterior = pos_atual;
+        pos_atual = pos_atual->prox;
+    }
+    
+    if (pos_anterior == NULL) {
+        novo->prox = *lista;
+        *lista = novo;
+    } else {
+        novo->prox = pos_anterior->prox;
+        pos_anterior->prox = novo;
+    }
+    
+    return comparacoes;
+}
 
 int main() {
-    no *lista = NULL;
-    int n;
+    int n, r;
     scanf("%d", &n);
-
+    scanf("%d", &r);
+    
+    // alocar dinamicamente (tava dando problema usar arrays fixas)
+    int *buscas = malloc(r * sizeof(int));
+    for (int i = 0; i < r; i++) {
+        scanf("%d", &buscas[i]);
+    }
+    
+    // busca sequencial 
+    no *lista = NULL;
     montar_lista(&lista, n);
-
-    int k;
-    scanf("%d", &k);
-
-    int seq_busca[1000];
-    for (int i = 0; i < k; i++) {
-        scanf("%d", &seq_busca[i]);
+    int total_seq = 0;
+    for (int i = 0; i < r; i++) {
+        total_seq += busca_sequencial(&lista, buscas[i]);
     }
-
-    int total_comp = 0;
-
-    for (int i = 0; i < k; i++) {
-        int achou;
-        busca_sequencial(lista, seq_busca[i], &achou, &total_comp);
-        if (!achou) {
-            inserir(&lista, seq_busca[i]);
-        }
+    printf("Sequencial: %d\n", total_seq);
+    
+    // mtf
+    montar_lista(&lista, n);
+    int total_mtf = 0;
+    for (int i = 0; i < r; i++) {
+        total_mtf += busca_mtf(&lista, buscas[i]);
     }
-
-    printf("Sequencial: %d\n", total_comp);
-
-    int total_comp_mtf = 0;
-    for (int i = 0; i < k; i++) {
-        int achou;
-        busca_mtf(&lista, seq_busca[i], &achou, &total_comp_mtf);
+    printf("MTF: %d\n", total_mtf);
+    
+    // transpose
+    montar_lista(&lista, n);
+    int total_transpose = 0;
+    for (int i = 0; i < r; i++) {
+        total_transpose += busca_transpose(&lista, buscas[i]);
     }
-    printf("MTF: %d\n", total_comp_mtf);
-
-
-
+    printf("Transpose: %d\n", total_transpose);
+    
+    // count
+    montar_lista(&lista, n);
+    int total_count = 0;
+    for (int i = 0; i < r; i++) {
+        total_count += busca_count(&lista, buscas[i]);
+    }
+    printf("Count: %d\n", total_count);
+    
+    while (lista != NULL) {
+        no *temp = lista;
+        lista = lista->prox;
+        free(temp);
+    }
+    free(buscas);
+    
     return 0;
 }
-
-
