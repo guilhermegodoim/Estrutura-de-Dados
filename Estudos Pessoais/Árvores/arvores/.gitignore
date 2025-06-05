@@ -1,0 +1,14 @@
+# Executáveis
+programa
+*.exe
+*.out
+
+# Arquivos de debug
+*.dSYM/
+*.su
+*.idb
+*.pdb
+
+# Arquivos temporários
+*~
+.DS_Store
