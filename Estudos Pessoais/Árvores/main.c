@@ -7,8 +7,8 @@ int main() {
     printf("=== DEMONSTRAÇÃO DA ÁRVORE BINÁRIA ===\n\n");
     
     // Inserindo elementos
-    printf("Inserindo elementos: 50, 30, 70, 20, 40, 60, 80\n");
-    int valores[] = {50, 30, 70, 20, 40, 60, 80};
+    printf("Inserindo elementos: ,2,3,4,5,6,7,8,9,10\n");
+    int valores[] = {1,2,3,4,5,6,7,8,9,10};
     int numValores = sizeof(valores) / sizeof(valores[0]);
     
     for (int i = 0; i < numValores; i++) {
@@ -19,13 +19,9 @@ int main() {
         }
     }
     
-    // Testando inserção de duplicata
-    printf("\nTentando inserir duplicata (50):\n");
-    if (inserir(arvore, 50)) {
-        printf("Valor 50 inserido com sucesso!\n");
-    } else {
-        printf("Falha ao inserir o valor 50 (duplicata não permitida)\n");
-    }
+    
+
+    
     
     printf("\nEstrutura visual da árvore:\n");
     imprimirArvore(arvore->raiz, 0);
@@ -42,6 +38,13 @@ int main() {
     printf("PostOrder: ");
     percursoPostOrder(arvore->raiz);
     printf("\n");
+
+    
+    int h = altura(arvore->raiz);
+    printf("Altura da árvore: %d\n", h);
+
+
+
 
 
     return 0;

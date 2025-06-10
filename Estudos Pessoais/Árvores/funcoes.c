@@ -116,3 +116,51 @@ void imprimirArvore(ArvNo* raiz, int espaco) {
     imprimirArvore(raiz->left, espaco);
 }
 
+int altura(ArvNo* raiz) {
+    if (raiz == NULL)
+        return -1; // altura da árvore vazia é -1
+    else {
+        int alturaEsq = altura(raiz->left);
+        int alturaDir = altura(raiz->right);
+        return 1 + (alturaEsq > alturaDir ? alturaEsq : alturaDir);
+    }
+}
+ArvNo* remover_no(ArvNo* raiz, int x) {
+    if (raiz == NULL)
+        return NULL;
+
+    if (x < raiz->dado) {
+        raiz->left = remover_no(raiz->left, x);
+    } else if (x > raiz->dado) {
+        raiz->right = remover_no(raiz->right, x);
+    } else {
+        // Caso 1: sem filhos
+        if (raiz->left == NULL && raiz->right == NULL) {
+            free(raiz);
+            return NULL;
+        }
+        // Caso 2: um filho (direita)
+        else if (raiz->left == NULL) {
+            ArvNo* temp = raiz->right;
+            free(raiz);
+            return temp;
+        }
+        // Caso 2: um filho (esquerda)
+        else if (raiz->right == NULL) {
+            ArvNo* temp = raiz->left;
+            free(raiz);
+            return temp;
+        }
+        // Caso 3: dois filhos
+        else {
+            ArvNo* sucessor = raiz->right;
+            while (sucessor->left != NULL) {
+                sucessor = sucessor->left;
+            }
+            raiz->dado = sucessor->dado;
+            raiz->right = remover_no(raiz->right, sucessor->dado);
+        }
+    }
+
+    return raiz;
+}

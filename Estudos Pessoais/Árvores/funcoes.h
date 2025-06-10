@@ -23,5 +23,8 @@ int inserir(tree * T, int x);
 void percursoPostOrder(ArvNo* raiz);
 void percursoPreOrder(ArvNo* raiz);
 void percursoInOrder(ArvNo* raiz);
+int altura(ArvNo* raiz);
+ArvNo* remover_no(ArvNo* raiz, int x);
+
 
 #endif
