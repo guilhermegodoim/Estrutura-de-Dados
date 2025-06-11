@@ -6,17 +6,15 @@ int main() {
     
     printf("=== DEMONSTRAÇÃO DA ÁRVORE BINÁRIA ===\n\n");
     
-    // Inserindo elementos
-    printf("Inserindo elementos: ,2,3,4,5,6,7,8,9,10\n");
-    int valores[] = {1,2,3,4,5,6,7,8,9,10};
+    printf("Inserindo elementos: 12, 45, 2, 99, 13, 54\n");
+    int valores[] = {12, 45, 2, 99, 13, 54};
     int numValores = sizeof(valores) / sizeof(valores[0]);
-    
+
     for (int i = 0; i < numValores; i++) {
-        if (inserir(arvore, valores[i])) {
-            printf("Valor %d inserido com sucesso!\n", valores[i]);
-        } else {
-            printf("Falha ao inserir o valor %d\n", valores[i]);
-        }
+        arvore->raiz = inserir(arvore->raiz, valores[i]);
+
+        // Checando se o valor foi inserido (simplesmente aceitamos não duplicados)
+        printf("Valor %d inserido com sucesso!\n", valores[i]);
     }
     
     

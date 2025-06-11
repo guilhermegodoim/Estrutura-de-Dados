@@ -19,7 +19,7 @@ typedef struct tree{
 void imprimirArvore(ArvNo* raiz, int espaco);
 tree * criar_arvore();
 ArvNo * criar_no(int x);
-int inserir(tree * T, int x);
+ArvNo* inserir(ArvNo *raiz, int x);
 void percursoPostOrder(ArvNo* raiz);
 void percursoPreOrder(ArvNo* raiz);
 void percursoInOrder(ArvNo* raiz);

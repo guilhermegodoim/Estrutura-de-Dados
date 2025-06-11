@@ -23,53 +23,20 @@ ArvNo * criar_no(int x){
 do nó a ser inserido é menor que o nó atual, ele é inserido na SAE. Caso seja maior, é in-
 serido na SAD. Se for igual, não insere. */
 
-int inserir(tree * T, int x){
-    if (T == NULL){
-        return 0; // árvore inválida (não foi inicializada)
-    }
-    
-    ArvNo * novo = criar_no(x);
-
-    if (novo == NULL){
-        return 0; // erro de alocação
+ArvNo* inserir(ArvNo *raiz, int x){
+    if (raiz == NULL){
+        return criar_no(x);  // cria e retorna o novo nó
     }
 
-    /* Caso a árvore seja vazia, nosso novo nó é a raíz*/
-    if (T->raiz == NULL){
-        T->raiz = novo;
-        return 1;
+    if (x > raiz->dado){
+        raiz->right = inserir(raiz->right, x);
+    } else if (x < raiz->dado){
+        raiz->left = inserir(raiz->left, x);
     }
-
-    /* Agora, caso a árvore já tenha uma raíz, vamos ter que percorrer ela para encontrar a 
-    posição de inserção */
-
-    ArvNo * atual = T->raiz;
-    ArvNo * pai = NULL;
-
-    while (atual != NULL){
-        pai = atual;
-
-        if (x < atual->dado){
-            atual = atual->left;
-        } else if (x > atual->dado){
-            atual = atual->right;
-        } else{
-            return 0;
-        }
-    }
-
-    /* Após esse loop temos o ponteiro pai apontando para a folha que iremos inserir o novo nó. 
-    Vamos agora inserir usando essa informação. */
-
-    if (x < pai->dado){
-        pai->left = novo;
-    } else if (x > pai->dado){
-        pai->right = novo;
-    }
-
-    return 1; // inserção bem sucedida.
-
+    // Se for igual, não insere
+    return raiz;
 }
+    
 
 // Percurso em ordem (inorder) - esquerda, raiz, direita
 void percursoInOrder(ArvNo* raiz) {
@@ -116,15 +83,6 @@ void imprimirArvore(ArvNo* raiz, int espaco) {
     imprimirArvore(raiz->left, espaco);
 }
 
-int altura(ArvNo* raiz) {
-    if (raiz == NULL)
-        return -1; // altura da árvore vazia é -1
-    else {
-        int alturaEsq = altura(raiz->left);
-        int alturaDir = altura(raiz->right);
-        return 1 + (alturaEsq > alturaDir ? alturaEsq : alturaDir);
-    }
-}
 ArvNo* remover_no(ArvNo* raiz, int x) {
     if (raiz == NULL)
         return NULL;
@@ -164,3 +122,19 @@ ArvNo* remover_no(ArvNo* raiz, int x) {
 
     return raiz;
 }
+
+
+int altura(ArvNo * raiz){
+    if (raiz == NULL){
+        return -1;
+    }
+
+    int h_esq = altura(raiz->left);
+    int h_dir = altura(raiz->right);
+
+    return (h_esq > h_dir ? h_esq : h_dir) + 1;
+
+
+
+}
+
