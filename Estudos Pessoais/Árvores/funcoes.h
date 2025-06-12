@@ -25,6 +25,9 @@ void percursoPreOrder(ArvNo* raiz);
 void percursoInOrder(ArvNo* raiz);
 int altura(ArvNo* raiz);
 ArvNo* remover_no(ArvNo* raiz, int x);
+int eh_abb(ArvNo * raiz, int max, int min);
+int sao_iguais(ArvNo * r1, ArvNo * r2);
+
 
 
 #endif

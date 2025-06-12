@@ -138,3 +138,29 @@ int altura(ArvNo * raiz){
 
 }
 
+int eh_abb(ArvNo * raiz, int max, int min){
+    if (raiz == NULL){
+        return 1;
+    }
+
+    if (raiz->dado <= min || raiz->dado >= max){
+        return 0;
+    }
+
+    return eh_abb(raiz->left, min, raiz->dado) && eh_abb(raiz->right, raiz->dado, max);
+
+}
+
+int sao_iguais(ArvNo * r1, ArvNo * r2){
+    if (r1 == NULL && r2 == NULL){
+        return 1;
+    }
+
+    if (r1 == NULL && r2 != NULL){
+        return 0;
+    }
+
+    return (r1->dado == r2->dado) && sao_iguais(r1->left, r2->left) && sao_iguais(r1->right, r2->right);
+}
+
+
