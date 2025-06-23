@@ -22,14 +22,14 @@ O repositório inteiro é feito na linguagem C. Várias atividaes envolvem compi
 
 O repositório é organizado em duas partes principais:
 
-### 🔬 `labs/`
+### 🔬 `labs MC202/`
 Diretório contendo os **laboratórios avaliativos (labs)** da disciplina, que envolvem:
 
 - Implementação de estruturas de dados em C
 - Aplicação de algoritmos eficientes para resolver problemas reais
 - Manipulação direta de ponteiros e memória dinâmica
 
-### 🧠 `exercicios/`
+### 🧠 `estudos pessoais/`
 Exercícios extras desenvolvidos para reforço de conteúdo e prática de raciocínio algorítmico. 
 Normalmente do livro do Waldemar sobre estrutura de dados em C e alguns do HackerRank
 
