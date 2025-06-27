@@ -1,0 +1,49 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "build-debug",  
+            "type": "shell",
+            "command": "gcc",
+            "args": [
+                "-g",
+                "-Wall",
+                "-Wextra", 
+                "-std=c99",
+                "*.c",
+                "-o",
+                "programa"
+            ],
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "detail": "Compila todos os arquivos .c com debug",
+            "problemMatcher": ["$gcc"]
+        },
+        {
+            "label": "build-release",
+            "type": "shell", 
+            "command": "gcc",
+            "args": [
+                "-O2",
+                "-Wall",
+                "-Wextra",
+                "-std=c99", 
+                "*.c",
+                "-o",
+                "programa"
+            ],
+            "group": "build",
+            "detail": "Compila versão otimizada (release)"
+        },
+        {
+            "label": "clean",
+            "type": "shell",
+            "command": "rm",
+            "args": ["-f", "programa"],
+            "group": "build",
+            "detail": "Remove executável"
+        }
+    ]
+}
