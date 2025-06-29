@@ -1,0 +1,17 @@
+{
+    "files.associations": {
+        "array": "c",
+        "hash_map": "c",
+        "string_view": "c",
+        "format": "c",
+        "initializer_list": "c",
+        "span": "c",
+        "stdio.h": "c",
+        "funcoes.h": "c",
+        "deque": "c",
+        "list": "c",
+        "string": "c",
+        "unordered_map": "c",
+        "vector": "c"
+    }
+}
